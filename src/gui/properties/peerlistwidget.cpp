@@ -487,7 +487,7 @@ void PeerListWidget::updatePeer(const BitTorrent::Torrent *torrent, const BitTor
         {
             m_listModel->setData(m_listModel->index(row, PeerListColumns::COUNTRY), icon, Qt::DecorationRole);
             const QString countryName = Net::GeoIPManager::CountryName(peer.country());
-            m_listModel->setData(m_listModel->index(row, PeerListColumns::COUNTRY), countryName, Qt::ToolTipRole);
+            setModelData(row, PeerListColumns::COUNTRY, countryName, countryName, Qt::AlignLeft | Qt::AlignVCenter);
         }
     }
 }
@@ -504,9 +504,6 @@ void PeerListWidget::handleResolved(const QHostAddress &ip, const QString &hostn
 
 void PeerListWidget::handleSortColumnChanged(const int col)
 {
-    if (col == PeerListColumns::COUNTRY)
-        m_proxyModel->setSortRole(Qt::ToolTipRole);
-    else
         m_proxyModel->setSortRole(PeerListSortModel::UnderlyingDataRole);
 }
 
