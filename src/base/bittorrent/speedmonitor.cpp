@@ -34,6 +34,10 @@ SpeedMonitor::SpeedMonitor()
 {
 }
 
+bool SpeedMonitor::enoughSamples() {
+    return (m_speedSamples.size() >= (MAX_SAMPLES - 1));
+}
+
 void SpeedMonitor::addSample(const SpeedSample &sample)
 {
     if (m_speedSamples.size() >= MAX_SAMPLES)

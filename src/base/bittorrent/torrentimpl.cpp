@@ -962,6 +962,13 @@ TorrentState TorrentImpl::state() const
 
 void TorrentImpl::updateState()
 {
+    // state alerts seem to happen every ~2 seconds
+    //LogMsg(tr("State \"%1\" AVG '%2' enoughSamples? %3 of torrent \"%4\"").arg(
+    //    "" + m_nativeStatus.state,
+    //    QString::number(m_speedMonitor.average().download),
+    //    QString::number(m_speedMonitor.enoughSamples()),
+    //    name()));
+
     if (m_nativeStatus.state == lt::torrent_status::checking_resume_data)
     {
         m_state = TorrentState::CheckingResumeData;
@@ -1009,6 +1016,10 @@ void TorrentImpl::updateState()
     }
     else
     {
+        //LogMsg(tr("State XYZ1 \"%1\" of torrent \"%2\"").arg(
+        //    ""+m_nativeStatus.state,
+        //    name()));
+
         if (isPaused())
             m_state = TorrentState::PausedDownloading;
         else if (m_session->isQueueingSystemEnabled() && isQueued())
@@ -1017,9 +1028,17 @@ void TorrentImpl::updateState()
             m_state = TorrentState::ForcedDownloading;
         else if (m_nativeStatus.download_payload_rate > 0)
             m_state = TorrentState::Downloading;
-        else
+        else {
+
+            if (m_speedMonitor.enoughSamples()) {
+                LogMsg(tr("Moving stalled torrent at the bottom of the queue \"%1\"").arg(name()));
+                m_nativeHandle.queue_position_bottom();
+                this->resume(BitTorrent::TorrentOperatingMode::Forced);
+            }
+
             m_state = TorrentState::StalledDownloading;
     }
+}
 }
 
 bool TorrentImpl::hasMetadata() const
@@ -1780,7 +1799,11 @@ void TorrentImpl::handleTorrentPausedAlert(const lt::torrent_paused_alert *p)
 
 void TorrentImpl::handleTorrentResumedAlert(const lt::torrent_resumed_alert *p)
 {
-    Q_UNUSED(p);
+    // need to know when the torrent gets resumed by the queuing system,
+    // so I can reset its stats and have a valid depth of samples to understand if it's actually stalled
+    LogMsg(tr("Resuming torrent, reset stats: '%1'").arg(name()));
+
+    m_speedMonitor.reset();
 }
 
 void TorrentImpl::handleSaveResumeDataAlert(const lt::save_resume_data_alert *p)
