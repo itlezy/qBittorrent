@@ -74,6 +74,7 @@ public:
 
     void addSample(const SpeedSample &sample);
     SpeedSampleAvg average() const;
+    bool enoughSamples();
     void reset();
 
 private:
