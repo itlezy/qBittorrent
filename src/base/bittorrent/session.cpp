@@ -1067,6 +1067,9 @@ void Session::configureComponents()
 void Session::initializeNativeSession()
 {
     const lt::alert_category_t alertMask = lt::alert::error_notification
+        | lt::alert::dht_notification
+        | lt::alert::dht_operation_notification
+        | lt::alert::dht_log_notification
         | lt::alert::file_progress_notification
         | lt::alert::ip_block_notification
         | lt::alert::peer_notification
@@ -4677,6 +4680,14 @@ void Session::handleAlert(const lt::alert *a)
         case lt::metadata_received_alert::alert_type:
             dispatchTorrentAlert(a);
             break;
+
+        case lt::dht_announce_alert::alert_type:
+            handleDHTAnnounceAlert(static_cast<const lt::dht_announce_alert*>(a));
+            break;
+        case lt::dht_get_peers_alert::alert_type:
+            handleDHTGetPeersAlert(static_cast<const lt::dht_get_peers_alert*>(a));
+            break;
+
         case lt::state_update_alert::alert_type:
             handleStateUpdateAlert(static_cast<const lt::state_update_alert*>(a));
             break;
@@ -5126,6 +5137,19 @@ void Session::handleSessionStatsAlert(const lt::session_stats_alert *p)
     m_cacheStatus.averageJobTime = (totalJobs > 0)
                                    ? (stats[m_metricIndices.disk.diskJobTime] / totalJobs) : 0;
 
+    if (m_status.downloadRate < 256 * 1024) {
+        // if speed lower than 256k, means I am not downloading, so set the alt speed where upload is unlocked
+        setAltGlobalSpeedLimitEnabled(true);
+        applyBandwidthLimits();
+        //lt::settings_pack settingsPack = m_nativeSession->get_settings();
+        //settingsPack.set_int(lt::settings_pack::upload_rate_limit, 128);
+    }
+    else {
+        // if I am downloading, set standard speed where upload is capped
+        setAltGlobalSpeedLimitEnabled(false);
+        applyBandwidthLimits();
+    }
+
     emit statsUpdated();
 
     if (m_refreshEnqueued)
@@ -5185,6 +5209,27 @@ void Session::handleStorageMovedFailedAlert(const lt::storage_moved_failed_alert
 
     handleMoveTorrentStorageJobFinished();
 }
+
+void Session::handleDHTAnnounceAlert(const lt::dht_announce_alert* p)
+{
+    const lt::sha1_hash infoHash = p->info_hash;
+
+    const QByteArray raw = QByteArray::fromRawData(infoHash.data(), infoHash.size());
+    LogMsg(tr("handleDHTAnnounceAlert \"%1\"").arg(QString::fromLatin1(raw.toHex())), Log::INFO);
+
+    //LogMsg(tr("handleDHTAnnounceAlert \"%1\"").arg(QString::fromUtf8(p->info_hash.to_string().c_str())), Log::INFO);
+}
+
+void Session::handleDHTGetPeersAlert(const lt::dht_get_peers_alert* p)
+{
+    const lt::sha1_hash infoHash = p->info_hash;
+
+    const QByteArray raw = QByteArray::fromRawData(infoHash.data(), infoHash.size());
+    LogMsg(tr("handleDHTGetPeersAlert \"%1\"").arg(QString::fromLatin1(raw.toHex())), Log::INFO);
+
+    //LogMsg(tr("handleDHTGetPeersAlert \"%1\"").arg(QString::fromUtf8(p->info_hash.to_string().c_str())), Log::INFO);
+}
+
 
 void Session::handleStateUpdateAlert(const lt::state_update_alert *p)
 {

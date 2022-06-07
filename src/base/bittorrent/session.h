@@ -633,6 +633,8 @@ namespace BitTorrent
         void handleStorageMovedAlert(const lt::storage_moved_alert *p);
         void handleStorageMovedFailedAlert(const lt::storage_moved_failed_alert *p);
         void handleSocks5Alert(const lt::socks5_alert *p) const;
+        void handleDHTAnnounceAlert(const lt::dht_announce_alert* p);
+        void handleDHTGetPeersAlert(const lt::dht_get_peers_alert* p);
 
         void createTorrent(const lt::torrent_handle &nativeHandle);
 
