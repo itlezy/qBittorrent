@@ -69,6 +69,7 @@
 #include <QNetworkInterface>
 #include <QRegularExpression>
 #include <QString>
+#include <QtCore>
 #include <QThread>
 #include <QTimer>
 #include <QUuid>
@@ -436,6 +437,7 @@ Session::Session(QObject *parent)
 #endif
     , m_seedingLimitTimer {new QTimer {this}}
     , m_resumeDataTimer {new QTimer {this}}
+    , m_checkDiskSpaceTimer {new QTimer {this}}
     , m_statistics {new Statistics {this}}
     , m_ioThread {new QThread {this}}
     , m_recentErroredTorrentsTimer {new QTimer {this}}
@@ -503,6 +505,11 @@ Session::Session(QObject *parent)
         m_resumeDataTimer->setInterval(saveInterval * 60 * 1000);
         m_resumeDataTimer->start();
     }
+
+    // Regular check of available disk space
+    connect(m_checkDiskSpaceTimer, &QTimer::timeout, this, [this]() { checkDiskSpace(); });
+    m_checkDiskSpaceTimer->setInterval(60 * 1000);
+    m_checkDiskSpaceTimer->start();
 
     // initialize PortForwarder instance
     new PortForwarderImpl {m_nativeSession};
@@ -2375,6 +2382,41 @@ void Session::exportTorrentFile(const Torrent *torrent, const QString &folderPat
         {
             LogMsg(tr("Failed to export torrent. Torrent: \"%1\". Destination: \"%2\". Reason: \"%3\"")
                    .arg(torrent->name(), newTorrentPath, result.error()), Log::WARNING);
+        }
+    }
+}
+
+void Session::checkDiskSpace()
+{
+    QStorageInfo infoRoot(QStorageInfo(downloadPath()).rootPath());
+
+    LogMsg(tr("Free disk space of \"%1\" %2 Gb available, current download rate is %3 kbs").arg(
+        infoRoot.rootPath(),
+        QString::number(infoRoot.bytesFree() / 1024 / 1024 / 1024),
+        QString::number(m_status.downloadRate / 1024)
+    ),
+        Log::INFO);
+
+    // if disk space is running below 8Gb, force download speed to 0, and I can keep uploading
+    if (infoRoot.bytesFree() < ((qint64)8 * 1024 * 1024 * 1024)) {
+        lt::settings_pack settingsPack = m_nativeSession->get_settings();
+        settingsPack.set_int(lt::settings_pack::download_rate_limit, 0);
+        m_nativeSession->apply_settings(settingsPack);
+
+        LogMsg(tr("Disk space low, download speed set to 0"), Log::INFO);
+    }
+    else {
+        // if enough disk space, I can apply the usual "dynamic" bandwidth logic
+
+        if (m_status.downloadRate < 256 * 1024) {
+            // if download speed gets lower than 256k, means I am not downloading, so set the alt speed where upload is unlocked
+            setAltGlobalSpeedLimitEnabled(true);
+            applyBandwidthLimits();
+        }
+        else {
+            // if I am downloading, set standard speed where upload is capped
+            setAltGlobalSpeedLimitEnabled(false);
+            applyBandwidthLimits();
         }
     }
 }
@@ -5136,19 +5178,6 @@ void Session::handleSessionStatsAlert(const lt::session_stats_alert *p)
                   + stats[m_metricIndices.disk.hashJobs];
     m_cacheStatus.averageJobTime = (totalJobs > 0)
                                    ? (stats[m_metricIndices.disk.diskJobTime] / totalJobs) : 0;
-
-    if (m_status.downloadRate < 256 * 1024) {
-        // if speed lower than 256k, means I am not downloading, so set the alt speed where upload is unlocked
-        setAltGlobalSpeedLimitEnabled(true);
-        applyBandwidthLimits();
-        //lt::settings_pack settingsPack = m_nativeSession->get_settings();
-        //settingsPack.set_int(lt::settings_pack::upload_rate_limit, 128);
-    }
-    else {
-        // if I am downloading, set standard speed where upload is capped
-        setAltGlobalSpeedLimitEnabled(false);
-        applyBandwidthLimits();
-    }
 
     emit statsUpdated();
 
