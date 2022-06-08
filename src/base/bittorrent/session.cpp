@@ -2390,10 +2390,10 @@ void Session::checkDiskSpace()
 {
     QStorageInfo infoRoot(QStorageInfo(downloadPath()).rootPath());
 
-    LogMsg(tr("Free disk space of \"%1\" %2 Gb available, current download rate is %3 kbs").arg(
+    LogMsg(tr("Free disk space of \"%1\" %2 available, current download rate is %3").arg(
         infoRoot.rootPath(),
-        QString::number(infoRoot.bytesFree() / 1024 / 1024 / 1024),
-        QString::number(m_status.downloadRate / 1024)
+        Utils::Misc::friendlyUnit(infoRoot.bytesFree()),
+        Utils::Misc::friendlyUnit(m_status.downloadRate, true)
     ),
         Log::INFO);
 
