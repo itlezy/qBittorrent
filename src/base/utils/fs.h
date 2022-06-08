@@ -32,6 +32,7 @@
  * Utility functions related to file system.
  */
 
+#include <QtCore>
 #include <QString>
 
 namespace Utils::Fs
@@ -81,6 +82,7 @@ namespace Utils::Fs
 
     QString tempPath();
 
+    QDir findRootFolder(const QDir &path);
     QString findRootFolder(const QStringList &filePaths);
     void stripRootFolder(QStringList &filePaths);
     void addRootFolder(QStringList &filePaths, const QString &name);

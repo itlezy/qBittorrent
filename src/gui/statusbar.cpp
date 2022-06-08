@@ -35,6 +35,7 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QStyle>
+#include <QtCore>
 
 #include "base/bittorrent/session.h"
 #include "base/bittorrent/sessionstatus.h"
@@ -87,6 +88,9 @@ StatusBar::StatusBar(QWidget *parent)
     m_upSpeedLbl->setStyleSheet("text-align:left;");
     m_upSpeedLbl->setMinimumWidth(200);
 
+    m_DiskFreeLbl = new QLabel(tr("%1 %2 free").arg("a:", 0), this);
+    m_DiskFreeLbl->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
+
     m_DHTLbl = new QLabel(tr("DHT: %1 nodes").arg(0), this);
     m_DHTLbl->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
 
@@ -110,6 +114,11 @@ StatusBar::StatusBar(QWidget *parent)
     m_connecStatusLblIcon->setMaximumWidth(Utils::Gui::largeIconSize().width());
     m_altSpeedsBtn->setMaximumWidth(Utils::Gui::largeIconSize().width());
 
+    QFrame *statusSep0 = new QFrame(this);
+    statusSep0->setFrameStyle(QFrame::VLine);
+#ifndef Q_OS_MACOS
+    statusSep0->setFrameShadow(QFrame::Raised);
+#endif
     QFrame *statusSep1 = new QFrame(this);
     statusSep1->setFrameStyle(QFrame::VLine);
 #ifndef Q_OS_MACOS
@@ -130,6 +139,8 @@ StatusBar::StatusBar(QWidget *parent)
 #ifndef Q_OS_MACOS
     statusSep4->setFrameShadow(QFrame::Raised);
 #endif
+    layout->addWidget(m_DiskFreeLbl);
+    layout->addWidget(statusSep0);
     layout->addWidget(m_DHTLbl);
     layout->addWidget(statusSep1);
     layout->addWidget(m_connecStatusLblIcon);
@@ -227,10 +238,22 @@ void StatusBar::updateSpeedLabels()
     m_upSpeedLbl->setText(upSpeedLbl);
 }
 
+void StatusBar::updateDiskFreeLabel()
+{
+    //TODO update based on a slower timer ?
+    QStorageInfo infoRoot = BitTorrent::Session::instance()->downloadPathStorageInfo();
+
+    m_DiskFreeLbl->setText(tr("%1 %2 free")
+        .arg(infoRoot.rootPath(),
+            Utils::Misc::friendlyUnit(infoRoot.bytesAvailable())));
+
+}
+
 void StatusBar::refresh()
 {
     updateConnectionStatus();
     updateDHTNodesNumber();
+    updateDiskFreeLabel();
     updateSpeedLabels();
 }
 

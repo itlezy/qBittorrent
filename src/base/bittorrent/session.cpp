@@ -2386,13 +2386,20 @@ void Session::exportTorrentFile(const Torrent *torrent, const QString &folderPat
     }
 }
 
+QStorageInfo Session::downloadPathStorageInfo()
+{
+    QStorageInfo infoRoot(Utils::Fs::findRootFolder(QDir(downloadPath())));
+
+    return infoRoot;
+}
+
 void Session::checkDiskSpace()
 {
-    QStorageInfo infoRoot(QStorageInfo(downloadPath()).rootPath());
+    QStorageInfo infoRoot = downloadPathStorageInfo();
 
     LogMsg(tr("Free disk space of \"%1\" %2 available, current download rate is %3").arg(
         infoRoot.rootPath(),
-        Utils::Misc::friendlyUnit(infoRoot.bytesFree()),
+        Utils::Misc::friendlyUnit(infoRoot.bytesAvailable()),
         Utils::Misc::friendlyUnit(m_status.downloadRate, true)
     ),
         Log::INFO);

@@ -58,6 +58,7 @@
 #include <QMimeDatabase>
 #include <QStorageInfo>
 #include <QRegularExpression>
+#include <QtCore>
 
 #include "base/bittorrent/common.h"
 #include "base/global.h"
@@ -403,6 +404,16 @@ bool Utils::Fs::isNetworkFileSystem(const QString &path)
 #endif
 }
 #endif // Q_OS_HAIKU
+
+QDir Utils::Fs::findRootFolder(const QDir& path)
+{
+    QDir dir(path.canonicalPath());
+
+    for (short maxCdUp = 32; dir.cdUp() && --maxCdUp > 0; ) {
+    }
+
+    return dir;
+}
 
 QString Utils::Fs::findRootFolder(const QStringList &filePaths)
 {

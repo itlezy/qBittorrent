@@ -41,6 +41,7 @@
 #include <QPointer>
 #include <QSet>
 #include <QtContainerFwd>
+#include <QtCore>
 #include <QVector>
 
 #include "base/settingvalue.h"
@@ -503,6 +504,9 @@ namespace BitTorrent
 
         void findIncompleteFiles(const TorrentInfo &torrentInfo, const QString &savePath
                                  , const QString &downloadPath, const QStringList &filePaths = {}) const;
+
+        QDir getDrive();
+        QStorageInfo downloadPathStorageInfo();
 
     signals:
         void allTorrentsFinished();
