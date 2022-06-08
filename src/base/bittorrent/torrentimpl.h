@@ -142,6 +142,7 @@ namespace BitTorrent
         bool isUploading() const override;
         bool isCompleted() const override;
         bool isActive() const override;
+        bool isActiveWTraffic() const override;
         bool isInactive() const override;
         bool isErrored() const override;
         bool isSequentialDownload() const override;

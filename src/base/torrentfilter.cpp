@@ -41,6 +41,7 @@ const TorrentFilter TorrentFilter::CompletedTorrent(TorrentFilter::Completed);
 const TorrentFilter TorrentFilter::PausedTorrent(TorrentFilter::Paused);
 const TorrentFilter TorrentFilter::ResumedTorrent(TorrentFilter::Resumed);
 const TorrentFilter TorrentFilter::ActiveTorrent(TorrentFilter::Active);
+const TorrentFilter TorrentFilter::ActiveWTrafficTorrent(TorrentFilter::ActiveWTraffic);
 const TorrentFilter TorrentFilter::InactiveTorrent(TorrentFilter::Inactive);
 const TorrentFilter TorrentFilter::StalledTorrent(TorrentFilter::Stalled);
 const TorrentFilter TorrentFilter::StalledUploadingTorrent(TorrentFilter::StalledUploading);
@@ -94,6 +95,8 @@ bool TorrentFilter::setTypeByName(const QString &filter)
         type = Resumed;
     else if (filter == "active")
         type = Active;
+    else if (filter == "active_w_traffic")
+        type = ActiveWTraffic;
     else if (filter == "inactive")
         type = Inactive;
     else if (filter == "stalled")
@@ -174,6 +177,8 @@ bool TorrentFilter::matchState(const BitTorrent::Torrent *const torrent) const
         return torrent->isResumed();
     case Active:
         return torrent->isActive();
+    case ActiveWTraffic:
+        return torrent->isActiveWTraffic();
     case Inactive:
         return torrent->isInactive();
     case Stalled:

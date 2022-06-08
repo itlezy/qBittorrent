@@ -923,6 +923,12 @@ bool TorrentImpl::isActive() const
             || m_state == TorrentState::Moving;
 }
 
+bool TorrentImpl::isActiveWTraffic() const
+{
+    return (downloadPayloadRate() > 4096 || uploadPayloadRate() > 4096);
+}
+
+
 bool TorrentImpl::isInactive() const
 {
     return !isActive();
@@ -1037,8 +1043,8 @@ void TorrentImpl::updateState()
             }
 
             m_state = TorrentState::StalledDownloading;
+        }
     }
-}
 }
 
 bool TorrentImpl::hasMetadata() const
