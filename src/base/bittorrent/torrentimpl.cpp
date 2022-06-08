@@ -925,7 +925,7 @@ bool TorrentImpl::isActive() const
 
 bool TorrentImpl::isActiveWTraffic() const
 {
-    return (downloadPayloadRate() > 4096 || uploadPayloadRate() > 4096);
+    return (downloadPayloadRate() > (4096 * 4) || uploadPayloadRate() > (4096 * 4));
 }
 
 
