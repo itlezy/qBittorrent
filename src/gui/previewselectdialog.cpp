@@ -105,9 +105,9 @@ PreviewSelectDialog::PreviewSelectDialog(QWidget *parent, const BitTorrent::Torr
         }
     }
 
-    m_previewListModel->sort(NAME);
-    m_ui->previewList->header()->setSortIndicator(0, Qt::AscendingOrder);
-    m_ui->previewList->selectionModel()->select(m_previewListModel->index(0, NAME), QItemSelectionModel::Select | QItemSelectionModel::Rows);
+    m_previewListModel->sort(SIZE, Qt::DescendingOrder);
+    m_ui->previewList->header()->setSortIndicator(0, Qt::DescendingOrder);
+    m_ui->previewList->selectionModel()->select(m_previewListModel->index(0, SIZE), QItemSelectionModel::Select | QItemSelectionModel::Rows);
 
     // Restore dialog state
     loadWindowState();
@@ -185,7 +185,6 @@ void PreviewSelectDialog::showEvent(QShowEvent *event)
         m_headerStateInitialized = true;
     }
 
-    // Only one file, no choice
-    if (m_previewListModel->rowCount() <= 1)
-        previewButtonClicked();
+    // Don't really care to preview smaller files, if so I can click from the content list
+    previewButtonClicked();
 }
