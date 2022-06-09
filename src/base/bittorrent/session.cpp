@@ -2404,15 +2404,18 @@ void Session::checkDiskSpace()
     ),
         Log::INFO);
 
-    // if disk space is running below 8Gb, force download speed to 0, and I can keep uploading
-    if (infoRoot.bytesFree() < ((qint64)8 * 1024 * 1024 * 1024)) {
+    // if disk space is running below 6Gb, force download speed to 0, and I can keep uploading
+    if (infoRoot.bytesFree() < ((qint64)6 * 1024 * 1024 * 1024)) {
         lt::settings_pack settingsPack = m_nativeSession->get_settings();
-        settingsPack.set_int(lt::settings_pack::download_rate_limit, 0);
+        settingsPack.set_int(lt::settings_pack::download_rate_limit, 256 * 1024);
+        settingsPack.set_int(lt::settings_pack::upload_rate_limit, 0);
         m_nativeSession->apply_settings(settingsPack);
 
-        LogMsg(tr("Disk space low, download speed set to 0"), Log::INFO);
+        LogMsg(tr("Disk space low, download speed lowered, upload speed unleashed"), Log::INFO);
     }
     else {
+        LogMsg(tr("Normal applyBandwidthLimits with dynamic logic.."), Log::INFO);
+
         // if enough disk space, I can apply the usual "dynamic" bandwidth logic
 
         if (m_status.downloadRate < 256 * 1024) {
