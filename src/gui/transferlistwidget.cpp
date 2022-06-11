@@ -226,6 +226,8 @@ TransferListWidget::TransferListWidget(QWidget *parent, MainWindow *mainWindow)
     connect(recheckHotkey, &QShortcut::activated, this, &TransferListWidget::recheckSelectedTorrents);
     const auto *forceStartHotkey = new QShortcut(Qt::CTRL + Qt::Key_M, this, nullptr, nullptr, Qt::WidgetShortcut);
     connect(forceStartHotkey, &QShortcut::activated, this, &TransferListWidget::forceStartSelectedTorrents);
+    const auto *goOfflineHotkey = new QShortcut(Qt::CTRL + Qt::Key_F7, this, nullptr, nullptr, Qt::WidgetShortcut);
+    connect(goOfflineHotkey, &QShortcut::activated, this, &TransferListWidget::toggleOffline);
 
     // This hack fixes reordering of first column with Qt5.
     // https://github.com/qtproject/qtbase/commit/e0fc088c0c8bc61dbcaf5928b24986cd61a22777
@@ -464,6 +466,11 @@ void TransferListWidget::deleteVisibleTorrents()
     {
         removeTorrents(torrents, false);
     }
+}
+
+void TransferListWidget::toggleOffline()
+{
+    BitTorrent::Session::instance()->toggleOffline();
 }
 
 void TransferListWidget::increaseQueuePosSelectedTorrents()

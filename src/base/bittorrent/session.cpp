@@ -517,6 +517,12 @@ Session::Session(QObject *parent)
     initMetrics();
 }
 
+void Session::toggleOffline()
+{
+    m_isOffline = !m_isOffline;
+    LogMsg(tr("BT is now Offline ? [%1]").arg(m_isOffline), Log::INFO);
+}
+
 bool Session::isDHTEnabled() const
 {
     return m_isDHTEnabled;
@@ -2395,6 +2401,17 @@ QStorageInfo Session::downloadPathStorageInfo()
 
 void Session::checkDiskSpace()
 {
+    if (m_isOffline) {
+        LogMsg(tr("Sorry, I'm offline %1").arg(m_isOffline));
+
+        lt::settings_pack settingsPack = m_nativeSession->get_settings();
+        settingsPack.set_int(lt::settings_pack::download_rate_limit, 1);
+        settingsPack.set_int(lt::settings_pack::upload_rate_limit, 1);
+        m_nativeSession->apply_settings(settingsPack);
+
+        return;
+    }
+
     QStorageInfo infoRoot = downloadPathStorageInfo();
 
     LogMsg(tr("Free disk space of \"%1\" %2 available, current download rate is %3").arg(
@@ -2407,7 +2424,7 @@ void Session::checkDiskSpace()
     // if disk space is running below 6Gb, force download speed to 0, and I can keep uploading
     if (infoRoot.bytesFree() < ((qint64)6 * 1024 * 1024 * 1024)) {
         lt::settings_pack settingsPack = m_nativeSession->get_settings();
-        settingsPack.set_int(lt::settings_pack::download_rate_limit, 256 * 1024);
+        settingsPack.set_int(lt::settings_pack::download_rate_limit, 32 * 1024);
         settingsPack.set_int(lt::settings_pack::upload_rate_limit, 0);
         m_nativeSession->apply_settings(settingsPack);
 
