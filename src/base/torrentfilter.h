@@ -54,6 +54,7 @@ public:
         Active,
         ActiveWTraffic,
         Inactive,
+        Incomplete,
         Stalled,
         StalledUploading,
         StalledDownloading,
@@ -74,6 +75,7 @@ public:
     static const TorrentFilter ActiveTorrent;
     static const TorrentFilter ActiveWTrafficTorrent;
     static const TorrentFilter InactiveTorrent;
+    static const TorrentFilter IncompleteTorrent;
     static const TorrentFilter StalledTorrent;
     static const TorrentFilter StalledUploadingTorrent;
     static const TorrentFilter StalledDownloadingTorrent;

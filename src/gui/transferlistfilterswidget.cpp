@@ -201,6 +201,9 @@ StatusFilterWidget::StatusFilterWidget(QWidget *parent, TransferListWidget *tran
     auto* traffic = new QListWidgetItem(this);
     traffic->setData(Qt::DisplayRole, tr("Active w Traffic (0)"));
     traffic->setData(Qt::DecorationRole, UIThemeManager::instance()->getIcon(QLatin1String("filteractive")));
+    auto* incomplete = new QListWidgetItem(this);
+    incomplete->setData(Qt::DisplayRole, tr("Incomplete (0)"));
+    incomplete->setData(Qt::DecorationRole, UIThemeManager::instance()->getIcon(QLatin1String("filterinactive")));
     auto *inactive = new QListWidgetItem(this);
     inactive->setData(Qt::DisplayRole, tr("Inactive (0)"));
     inactive->setData(Qt::DecorationRole, UIThemeManager::instance()->getIcon(QLatin1String("filterinactive")));
@@ -232,6 +235,8 @@ StatusFilterWidget::~StatusFilterWidget()
 
 void StatusFilterWidget::updateTorrentNumbers()
 {
+    // if (!this->isActiveWindow()) { return; }
+
     int nbDownloading = 0;
     int nbSeeding = 0;
     int nbCompleted = 0;
@@ -245,6 +250,7 @@ void StatusFilterWidget::updateTorrentNumbers()
     int nbChecking = 0;
     int nbErrored = 0;
     int nbActiveWTraffic = 0;
+    int nbIncomplete = 0;
 
     const QVector<BitTorrent::Torrent *> torrents = BitTorrent::Session::instance()->torrents();
     for (const BitTorrent::Torrent *torrent : torrents)
@@ -273,6 +279,8 @@ void StatusFilterWidget::updateTorrentNumbers()
             ++nbErrored;
         if (torrent->isActiveWTraffic())
             ++nbActiveWTraffic;
+        if (!torrent->isCompleted())
+            ++nbIncomplete;
     }
 
     nbStalled = nbStalledUploading + nbStalledDownloading;
@@ -286,6 +294,7 @@ void StatusFilterWidget::updateTorrentNumbers()
     item(TorrentFilter::Active)->setData(Qt::DisplayRole, tr("Active (%1)").arg(nbActive));
     item(TorrentFilter::ActiveWTraffic)->setData(Qt::DisplayRole, tr("Active w Traffic (%1)").arg(nbActiveWTraffic));
     item(TorrentFilter::Inactive)->setData(Qt::DisplayRole, tr("Inactive (%1)").arg(nbInactive));
+    item(TorrentFilter::Incomplete)->setData(Qt::DisplayRole, tr("Incomplete (%1)").arg(nbIncomplete));
     item(TorrentFilter::Stalled)->setData(Qt::DisplayRole, tr("Stalled (%1)").arg(nbStalled));
     item(TorrentFilter::StalledUploading)->setData(Qt::DisplayRole, tr("Stalled Uploading (%1)").arg(nbStalledUploading));
     item(TorrentFilter::StalledDownloading)->setData(Qt::DisplayRole, tr("Stalled Downloading (%1)").arg(nbStalledDownloading));
