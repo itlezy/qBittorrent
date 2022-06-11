@@ -213,6 +213,8 @@ namespace BitTorrent
         static void freeInstance();
         static Session *instance();
 
+        void toggleOffline();
+
         QString savePath() const;
         void setSavePath(const QString &path);
         QString downloadPath() const;
@@ -663,6 +665,7 @@ namespace BitTorrent
         bool m_deferredConfigureScheduled = false;
         bool m_IPFilteringConfigured = false;
         bool m_listenInterfaceConfigured = false;
+        bool m_isOffline = false;
 
         CachedSettingValue<bool> m_isDHTEnabled;
         CachedSettingValue<bool> m_isLSDEnabled;

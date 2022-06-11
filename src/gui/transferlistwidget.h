@@ -70,6 +70,7 @@ public slots:
     void resumeAllTorrents();
     void startSelectedTorrents();
     void forceStartSelectedTorrents();
+    void toggleOffline();
     void startVisibleTorrents();
     void pauseSelectedTorrents();
     void pauseVisibleTorrents();
