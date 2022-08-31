@@ -1039,7 +1039,10 @@ void TorrentImpl::updateState()
             if (m_speedMonitor.enoughSamples()) {
                 LogMsg(tr("Moving stalled torrent at the bottom of the queue \"%1\"").arg(name()));
                 m_nativeHandle.queue_position_bottom();
-                this->resume(BitTorrent::TorrentOperatingMode::Forced);
+
+                // pause torrent instead of forcing
+                this->pause();
+                //this->resume(BitTorrent::TorrentOperatingMode::Forced);
             }
 
             m_state = TorrentState::StalledDownloading;

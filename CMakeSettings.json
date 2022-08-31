@@ -1,0 +1,112 @@
+﻿{
+  "configurations": [
+    {
+      "name": "x64-Debug",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "-DVCPKG_TARGET_TRIPLET=\"x64-windows-static\" -DMSVC_RUNTIME_DYNAMIC=OFF -DWEBUI=OFF",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "cmakeToolchain": "C:/prj/vcpkg/scripts/buildsystems/vcpkg.cmake",
+      "variables": [
+        {
+          "name": "LibtorrentRasterbar_DIR",
+          "value": "C:/prj/vcpkg/installed/x64-windows-static/debug/share",
+          "type": "PATH"
+        },
+        {
+          "name": "Boost_DIR",
+          "value": "C:/prj/vcpkg/installed/x64-windows-static/debug/share",
+          "type": "PATH"
+        },
+        {
+          "name": "Boost_INCLUDE_DIR",
+          "value": "C:/prj/vcpkg/installed/x64-windows-static/include",
+          "type": "PATH"
+        },
+        {
+          "name": "OpenSSL_DIR",
+          "value": "C:/prj/vcpkg/installed/x64-windows-static/debug/share",
+          "type": "PATH"
+        },
+        {
+          "name": "Qt5LinguistTools_DIR",
+          "value": "C:/prj/vcpkg/installed/x64-windows-static/share/cmake/Qt5LinguistTools",
+          "type": "PATH"
+        },
+        {
+          "name": "Qt5Svg_DIR",
+          "value": "C:/prj/vcpkg/installed/x64-windows-static/share/cmake/Qt5Svg",
+          "type": "PATH"
+        },
+        {
+          "name": "Qt5WinExtras_DIR",
+          "value": "C:/prj/vcpkg/installed/x64-windows-static/share/cmake/Qt5WinExtras",
+          "type": "PATH"
+        },
+        {
+          "name": "ZLIB_DIR",
+          "value": "C:/prj/vcpkg/installed/x64-windows-static/debug/share",
+          "type": "PATH"
+        }
+      ]
+    },
+    {
+      "name": "x64-Release",
+      "generator": "Ninja",
+      "configurationType": "Release",
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "-DVCPKG_TARGET_TRIPLET=\"x64-windows-static\" -DMSVC_RUNTIME_DYNAMIC=OFF -DWEBUI=OFF",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "cmakeToolchain": "C:/prj/vcpkg/scripts/buildsystems/vcpkg.cmake",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "variables": [
+        {
+          "name": "LibtorrentRasterbar_DIR",
+          "value": "C:/prj/vcpkg/installed/x64-windows-static/share",
+          "type": "PATH"
+        },
+        {
+          "name": "Boost_DIR",
+          "value": "C:/prj/vcpkg/installed/x64-windows-static/share",
+          "type": "PATH"
+        },
+        {
+          "name": "Boost_INCLUDE_DIR",
+          "value": "C:/prj/vcpkg/installed/x64-windows-static/include",
+          "type": "PATH"
+        },
+        {
+          "name": "OpenSSL_DIR",
+          "value": "C:/prj/vcpkg/installed/x64-windows-static/share",
+          "type": "PATH"
+        },
+        {
+          "name": "Qt5LinguistTools_DIR",
+          "value": "C:/prj/vcpkg/installed/x64-windows-static/share/cmake/Qt5LinguistTools",
+          "type": "PATH"
+        },
+        {
+          "name": "Qt5Svg_DIR",
+          "value": "C:/prj/vcpkg/installed/x64-windows-static/share/cmake/Qt5Svg",
+          "type": "PATH"
+        },
+        {
+          "name": "Qt5WinExtras_DIR",
+          "value": "C:/prj/vcpkg/installed/x64-windows-static/share/cmake/Qt5WinExtras",
+          "type": "PATH"
+        },
+        {
+          "name": "ZLIB_DIR",
+          "value": "C:/prj/vcpkg/installed/x64-windows-static/share",
+          "type": "PATH"
+        }
+      ]
+    }
+  ]
+}
