@@ -1081,8 +1081,8 @@ void Session::initializeNativeSession()
 {
     const lt::alert_category_t alertMask = lt::alert::error_notification
         | lt::alert::dht_notification
-        | lt::alert::dht_operation_notification
-        | lt::alert::dht_log_notification
+        // | lt::alert::dht_operation_notification
+        // | lt::alert::dht_log_notification
         | lt::alert::file_progress_notification
         | lt::alert::ip_block_notification
         | lt::alert::peer_notification
