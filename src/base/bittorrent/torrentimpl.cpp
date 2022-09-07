@@ -968,6 +968,13 @@ TorrentState TorrentImpl::state() const
 
 void TorrentImpl::updateState()
 {
+    // state alerts seem to happen every ~2 seconds
+    //LogMsg(tr("State \"%1\" AVG '%2' enoughSamples? %3 of torrent \"%4\"").arg(
+    //    "" + m_nativeStatus.state,
+    //    QString::number(m_speedMonitor.average().download),
+    //    QString::number(m_speedMonitor.enoughSamples()),
+    //    name()));
+
     if (m_nativeStatus.state == lt::torrent_status::checking_resume_data)
     {
         m_state = TorrentState::CheckingResumeData;
@@ -1015,6 +1022,10 @@ void TorrentImpl::updateState()
     }
     else
     {
+        //LogMsg(tr("State XYZ1 \"%1\" of torrent \"%2\"").arg(
+        //    ""+m_nativeStatus.state,
+        //    name()));
+
         if (isPaused())
             m_state = TorrentState::PausedDownloading;
         else if (m_session->isQueueingSystemEnabled() && isQueued())
