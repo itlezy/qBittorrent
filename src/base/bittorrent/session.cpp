@@ -437,7 +437,7 @@ Session::Session(QObject *parent)
 #endif
     , m_seedingLimitTimer {new QTimer {this}}
     , m_resumeDataTimer {new QTimer {this}}
-    , m_checkDiskSpaceTimer {new QTimer {this}}
+    , m_extensionUtilitiesTimer {new QTimer {this}}
     , m_statistics {new Statistics {this}}
     , m_ioThread {new QThread {this}}
     , m_recentErroredTorrentsTimer {new QTimer {this}}
@@ -507,9 +507,9 @@ Session::Session(QObject *parent)
     }
 
     // Regular check of available disk space
-    connect(m_checkDiskSpaceTimer, &QTimer::timeout, this, [this]() { checkDiskSpace(); });
-    m_checkDiskSpaceTimer->setInterval(60 * 1000);
-    m_checkDiskSpaceTimer->start();
+    connect(m_extensionUtilitiesTimer, &QTimer::timeout, this, [this]() { extensionUtilitiesTimerEvent(); });
+    m_extensionUtilitiesTimer->setInterval(120 * 1000);
+    m_extensionUtilitiesTimer->start();
 
     // initialize PortForwarder instance
     new PortForwarderImpl {m_nativeSession};
@@ -2399,7 +2399,7 @@ QStorageInfo Session::downloadPathStorageInfo()
     return infoRoot;
 }
 
-void Session::checkDiskSpace()
+void Session::extensionUtilitiesTimerEvent()
 {
     if (m_isOffline) {
         LogMsg(tr("Sorry, I'm offline %1").arg(m_isOffline));
@@ -2418,14 +2418,14 @@ void Session::checkDiskSpace()
         infoRoot.rootPath(),
         Utils::Misc::friendlyUnit(infoRoot.bytesAvailable()),
         Utils::Misc::friendlyUnit(m_status.downloadRate, true)
-    ),
+        ),
         Log::INFO);
 
-    // if disk space is running below 6Gb, force download speed to 0, and I can keep uploading
-    if (infoRoot.bytesFree() < ((qint64)6 * 1024 * 1024 * 1024)) {
+    // if disk space is running below 8Gb, force download speed to 32k, and I can keep uploading
+    if (infoRoot.bytesFree() < ((qint64)8 * 1024 * 1024 * 1024)) {
         lt::settings_pack settingsPack = m_nativeSession->get_settings();
         settingsPack.set_int(lt::settings_pack::download_rate_limit, 32 * 1024);
-        settingsPack.set_int(lt::settings_pack::upload_rate_limit, 0);
+        //settingsPack.set_int(lt::settings_pack::upload_rate_limit, 0);
         m_nativeSession->apply_settings(settingsPack);
 
         LogMsg(tr("Disk space low, download speed lowered, upload speed unleashed"), Log::INFO);
@@ -5281,7 +5281,7 @@ void Session::handleDHTGetPeersAlert(const lt::dht_get_peers_alert* p)
     const lt::sha1_hash infoHash = p->info_hash;
 
     const QByteArray raw = QByteArray::fromRawData(infoHash.data(), infoHash.size());
-    LogMsg(tr("handleDHTGetPeersAlert \"%1\"").arg(QString::fromLatin1(raw.toHex())), Log::INFO);
+    // LogMsg(tr("handleDHTGetPeersAlert \"%1\"").arg(QString::fromLatin1(raw.toHex())), Log::INFO);
 
     //LogMsg(tr("handleDHTGetPeersAlert \"%1\"").arg(QString::fromUtf8(p->info_hash.to_string().c_str())), Log::INFO);
 }

@@ -644,7 +644,7 @@ namespace BitTorrent
 
         void createTorrent(const lt::torrent_handle &nativeHandle);
 
-        void checkDiskSpace();
+        void extensionUtilitiesTimerEvent();
 
         void saveResumeData();
         void saveTorrentsQueue() const;
@@ -779,7 +779,7 @@ namespace BitTorrent
         bool m_refreshEnqueued = false;
         QTimer *m_seedingLimitTimer = nullptr;
         QTimer *m_resumeDataTimer = nullptr;
-        QTimer *m_checkDiskSpaceTimer = nullptr;
+        QTimer *m_extensionUtilitiesTimer = nullptr;
         Statistics *m_statistics = nullptr;
         // IP filtering
         QPointer<FilterParserThread> m_filterParser;
