@@ -968,14 +968,6 @@ TorrentState TorrentImpl::state() const
 
 void TorrentImpl::updateState()
 {
-    // state alerts seem to happen every ~2 seconds
-    //LogMsg(tr("State \"%1\" AVG '%2' enoughSamples? %3 cbs %4 of torrent \"%5\"").arg(
-    //    "" + m_nativeStatus.state,
-    //    QString::number(m_speedMonitor.average().download),
-    //    QString::number(m_caughtBeingStalled),
-    //    QString::number(m_speedMonitor.enoughSamples()),
-    //    name()));
-
     if (m_nativeStatus.state == lt::torrent_status::checking_resume_data)
     {
         m_state = TorrentState::CheckingResumeData;
@@ -1023,13 +1015,6 @@ void TorrentImpl::updateState()
     }
     else
     {
-        //LogMsg(tr("State \"%1\" of torrent \"%2\" %3 %4").arg(
-        //    "" + m_nativeStatus.state,
-        //    name(),
-        //    QString::number(m_speedMonitor.average().download),
-        //    QString::number(m_speedMonitor.enoughSamples())
-        //));
-
         if (isPaused())
             m_state = TorrentState::PausedDownloading;
         else if (m_session->isQueueingSystemEnabled() && isQueued())
@@ -1039,20 +1024,10 @@ void TorrentImpl::updateState()
         else if (m_nativeStatus.download_payload_rate > 0)
             m_state = TorrentState::Downloading;
         else {
-            m_caughtBeingStalled++;
-
-            LogMsg(tr("State ELSE ELSE ELSE %5 \"%1\" of torrent \"%2\" %3 %4").arg(
-                "" + m_nativeStatus.state,
-                name(),
-                QString::number(m_speedMonitor.average().download),
-                QString::number(m_speedMonitor.enoughSamples()),
-                QString::number(m_caughtBeingStalled)                    
-            ));
-
-          //if (m_caughtBeingStalled > 30 && m_speedMonitor.average().download < (64 * 1024)) {
             if (m_speedMonitor.enoughSamples() && m_speedMonitor.average().download < ((qint64)64 * 1024)) {
 
-                LogMsg(tr("Moving stalled torrent at the bottom of the queue avg dld %1, \"%2\"").arg(QString::number(m_speedMonitor.average().download), name()));
+                LogMsg(tr("Moving stalled download at the bottom of the queue, avg dld %1, \"%2\"").arg(
+                    QString::number(m_speedMonitor.average().download), name()));
 
                 m_nativeHandle.queue_position_bottom();
                 this->resume(BitTorrent::TorrentOperatingMode::Forced);
@@ -1825,7 +1800,6 @@ void TorrentImpl::handleTorrentResumedAlert(const lt::torrent_resumed_alert *p)
     // so I can reset its stats and have a valid depth of samples to understand if it's actually stalled
     LogMsg(tr("Resuming torrent, reset stats: '%1'").arg(name()));
 
-    m_caughtBeingStalled = 0;
     m_speedMonitor.reset();
 }
 
