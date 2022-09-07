@@ -77,6 +77,7 @@
 #include "base/algorithm.h"
 #include "base/global.h"
 #include "base/logger.h"
+#include "base/preferences.h"
 #include "base/net/downloadmanager.h"
 #include "base/net/proxyconfigurationmanager.h"
 #include "base/profile.h"
@@ -2412,38 +2413,43 @@ void Session::extensionUtilitiesTimerEvent()
         return;
     }
 
-    QStorageInfo infoRoot = downloadPathStorageInfo();
+    int minFreeGb = Preferences::instance()->getLowDiskSpaceCheckGb();
 
-    LogMsg(tr("Free disk space of \"%1\" %2 available, current download rate is %3").arg(
-        infoRoot.rootPath(),
-        Utils::Misc::friendlyUnit(infoRoot.bytesAvailable()),
-        Utils::Misc::friendlyUnit(m_status.downloadRate, true)
+    if (minFreeGb > 0) {
+        QStorageInfo infoRoot = downloadPathStorageInfo();
+
+        LogMsg(tr("Free disk space of \"%1\" %2 available (min %3), current download rate is %4").arg(
+            infoRoot.rootPath(),
+            Utils::Misc::friendlyUnit(infoRoot.bytesAvailable()),
+            QString::number(minFreeGb),
+            Utils::Misc::friendlyUnit(m_status.downloadRate, true)
         ),
         Log::INFO);
 
-    // if disk space is running below 8Gb, force download speed to 32k, and I can keep uploading
-    if (infoRoot.bytesFree() < ((qint64)8 * 1024 * 1024 * 1024)) {
-        lt::settings_pack settingsPack = m_nativeSession->get_settings();
-        settingsPack.set_int(lt::settings_pack::download_rate_limit, 32 * 1024);
-        //settingsPack.set_int(lt::settings_pack::upload_rate_limit, 0);
-        m_nativeSession->apply_settings(settingsPack);
+        // if disk space is running below x Gb, force download speed to 32k, and I can keep uploading
+        if (infoRoot.bytesFree() < ((qint64)minFreeGb * 1024 * 1024 * 1024)) {
+            lt::settings_pack settingsPack = m_nativeSession->get_settings();
+            settingsPack.set_int(lt::settings_pack::download_rate_limit, 32 * 1024);
+            //settingsPack.set_int(lt::settings_pack::upload_rate_limit, 0);
+            m_nativeSession->apply_settings(settingsPack);
 
-        LogMsg(tr("Disk space low, download speed lowered, upload speed unleashed"), Log::INFO);
-    }
-    else {
-        LogMsg(tr("Normal applyBandwidthLimits with dynamic logic.."), Log::INFO);
-
-        // if enough disk space, I can apply the usual "dynamic" bandwidth logic
-
-        if (m_status.downloadRate < 256 * 1024) {
-            // if download speed gets lower than 256k, means I am not downloading, so set the alt speed where upload is unlocked
-            setAltGlobalSpeedLimitEnabled(true);
-            applyBandwidthLimits();
+            LogMsg(tr("Disk space low, download speed lowered, upload speed unleashed"), Log::INFO);
         }
         else {
-            // if I am downloading, set standard speed where upload is capped
-            setAltGlobalSpeedLimitEnabled(false);
-            applyBandwidthLimits();
+            LogMsg(tr("Normal applyBandwidthLimits with dynamic logic.."), Log::INFO);
+
+            // if enough disk space, I can apply the usual "dynamic" bandwidth logic
+
+            if (m_status.downloadRate < 256 * 1024) {
+                // if download speed gets lower than 256k, means I am not downloading, so set the alt speed where upload is unlocked
+                setAltGlobalSpeedLimitEnabled(true);
+                applyBandwidthLimits();
+            }
+            else {
+                // if I am downloading, set standard speed where upload is capped
+                setAltGlobalSpeedLimitEnabled(false);
+                applyBandwidthLimits();
+            }
         }
     }
 }
@@ -5281,7 +5287,18 @@ void Session::handleDHTGetPeersAlert(const lt::dht_get_peers_alert* p)
     const lt::sha1_hash infoHash = p->info_hash;
 
     const QByteArray raw = QByteArray::fromRawData(infoHash.data(), infoHash.size());
-    // LogMsg(tr("handleDHTGetPeersAlert \"%1\"").arg(QString::fromLatin1(raw.toHex())), Log::INFO);
+    const QString infoHashS = QString::fromLatin1(raw.toHex());
+
+    LogMsg(tr("handleDHTGetPeersAlert \"%1\"").arg(infoHashS), Log::INFO);
+
+    if (Preferences::instance()->isForceSeedUponGetPeers()) {
+        const auto id = BitTorrent::TorrentID::fromString(infoHashS);
+        BitTorrent::Torrent* const torrent = BitTorrent::Session::instance()->findTorrent(id);
+        if (torrent && torrent->progress() == 1.0) {
+            torrent->resume(BitTorrent::TorrentOperatingMode::Forced);
+            LogMsg(tr("Forcing resume of torrent due to get_peers request %1 \"%2\"").arg(infoHashS, torrent->name()), Log::INFO);
+        }
+    }
 
     //LogMsg(tr("handleDHTGetPeersAlert \"%1\"").arg(QString::fromUtf8(p->info_hash.to_string().c_str())), Log::INFO);
 }

@@ -1664,6 +1664,26 @@ bool Preferences::getSpeedWidgetGraphEnable(const int id) const
     return value(QString::fromLatin1("SpeedWidget/graph_enable_%1").arg(id), ((id == 0) || (id == 1)));
 }
 
+void Preferences::setForceSeedUponGetPeers(const bool enabled)
+{
+    setValue("Extensions/ForceSeedUponGetPeers/Enabled", enabled);
+}
+
+bool Preferences::isForceSeedUponGetPeers() const
+{
+    return value("Extensions/ForceSeedUponGetPeers/Enabled", true);
+}
+
+void Preferences::setLowDiskSpaceCheckGb(const int minFreeGb)
+{
+    setValue("Extensions/LowDiskSpaceCheck/Gb", minFreeGb);
+}
+
+int Preferences::getLowDiskSpaceCheckGb() const
+{
+    return value("Extensions/LowDiskSpaceCheck/Gb", 12);
+}
+
 void Preferences::setSpeedWidgetGraphEnable(const int id, const bool enable)
 {
     setValue(QString::fromLatin1("SpeedWidget/graph_enable_%1").arg(id), enable);

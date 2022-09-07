@@ -406,6 +406,12 @@ public:
     bool getSpeedWidgetGraphEnable(int id) const;
     void setSpeedWidgetGraphEnable(int id, bool enable);
 
+    // Extensions
+    bool isForceSeedUponGetPeers() const;
+    void setForceSeedUponGetPeers(bool enabled);
+    int getLowDiskSpaceCheckGb() const;
+    void setLowDiskSpaceCheckGb(int minFreeGb);
+
 public slots:
     void setStatusFilterState(bool checked);
     void setCategoryFilterState(bool checked);
