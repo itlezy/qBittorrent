@@ -310,6 +310,7 @@ namespace BitTorrent
         TagSet m_tags;
         qreal m_ratioLimit;
         int m_seedingTimeLimit;
+        int m_caughtBeingStalled = 0;
         TorrentOperatingMode m_operatingMode;
         TorrentContentLayout m_contentLayout;
         bool m_hasSeedStatus;
