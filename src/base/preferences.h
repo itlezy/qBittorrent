@@ -415,6 +415,7 @@ public:
     bool isDynamicBandwidthSwitchEnabled() const;
     int getDynamicBandwidthSwitchLowerThreshold() const;
     int getStalledDownloadBehavior() const;
+    bool isLogDHTAlerts() const;
 
 public slots:
     void setStatusFilterState(bool checked);

@@ -5285,12 +5285,13 @@ void Session::handleStorageMovedFailedAlert(const lt::storage_moved_failed_alert
 
 void Session::handleDHTAnnounceAlert(const lt::dht_announce_alert* p)
 {
-    const lt::sha1_hash infoHash = p->info_hash;
+    if (Preferences::instance()->isLogDHTAlerts()) {
+        const lt::sha1_hash infoHash = p->info_hash;
 
-    const QByteArray raw = QByteArray::fromRawData(infoHash.data(), infoHash.size());
-    LogMsg(tr("handleDHTAnnounceAlert \"%1\"").arg(QString::fromLatin1(raw.toHex())), Log::INFO);
-
-    //LogMsg(tr("handleDHTAnnounceAlert \"%1\"").arg(QString::fromUtf8(p->info_hash.to_string().c_str())), Log::INFO);
+        const QByteArray raw = QByteArray::fromRawData(infoHash.data(), infoHash.size());
+        LogMsg(tr("handleDHTAnnounceAlert \"%1\"").arg(QString::fromLatin1(raw.toHex())), Log::INFO);
+        //LogMsg(tr("handleDHTAnnounceAlert \"%1\"").arg(QString::fromUtf8(p->info_hash.to_string().c_str())), Log::INFO);
+    }
 }
 
 void Session::handleDHTGetPeersAlert(const lt::dht_get_peers_alert* p)
@@ -5300,7 +5301,8 @@ void Session::handleDHTGetPeersAlert(const lt::dht_get_peers_alert* p)
     const QByteArray raw = QByteArray::fromRawData(infoHash.data(), infoHash.size());
     const QString infoHashS = QString::fromLatin1(raw.toHex());
 
-    LogMsg(tr("handleDHTGetPeersAlert \"%1\"").arg(infoHashS), Log::INFO);
+    if (Preferences::instance()->isLogDHTAlerts())
+        LogMsg(tr("handleDHTGetPeersAlert \"%1\"").arg(infoHashS), Log::INFO);
 
     int resumeUponGetPeersBehavior = Preferences::instance()->getResumeUponGetPeersBehavior();
 
@@ -5317,8 +5319,6 @@ void Session::handleDHTGetPeersAlert(const lt::dht_get_peers_alert* p)
             ), Log::INFO);
         }
     }
-
-    //LogMsg(tr("handleDHTGetPeersAlert \"%1\"").arg(QString::fromUtf8(p->info_hash.to_string().c_str())), Log::INFO);
 }
 
 

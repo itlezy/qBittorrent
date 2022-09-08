@@ -1735,6 +1735,11 @@ int Preferences::getStalledDownloadBehavior() const
     return value("Extensions/StalledDownload/Behavior", 2);
 }
 
+bool Preferences::isLogDHTAlerts() const
+{
+    return value("Extensions/LogDHTAlerts/Enabled", false);
+}
+
 void Preferences::apply()
 {
     if (SettingsStorage::instance()->save())
