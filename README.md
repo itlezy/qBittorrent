@@ -93,3 +93,10 @@ int Preferences::getStalledDownloadBehavior() const
 }
 
 ```
+
+And yes, the have PEER_ID and USER_AGENT been changed to keep it clean
+
+```c
+    const char PEER_ID[] = "qLZ";
+    const char USER_AGENT[] = "qLZtorrent/" QBT_VERSION_2;
+```
