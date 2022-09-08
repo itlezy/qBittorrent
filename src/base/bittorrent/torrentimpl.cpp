@@ -1034,8 +1034,7 @@ void TorrentImpl::updateState()
                     QString::number(stalledDownloadBehavior),
                     QString::number(m_speedMonitor.average().download),
                     name()
-                ),
-                Log::INFO);
+                ));
 
                 m_nativeHandle.queue_position_bottom();
 
