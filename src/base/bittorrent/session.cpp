@@ -114,8 +114,8 @@ const QString CATEGORIES_FILE_NAME {QStringLiteral("categories.json")};
 
 namespace
 {
-    const char PEER_ID[] = "qB";
-    const char USER_AGENT[] = "qBittorrent/" QBT_VERSION_2;
+    const char PEER_ID[] = "qLZ";
+    const char USER_AGENT[] = "qLZtorrent/" QBT_VERSION_2;
 
     void torrentQueuePositionUp(const lt::torrent_handle &handle)
     {
