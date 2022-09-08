@@ -521,7 +521,7 @@ Session::Session(QObject *parent)
 void Session::toggleOffline()
 {
     m_isOffline = !m_isOffline;
-    LogMsg(tr("BT is now Offline ? [%1]").arg(m_isOffline), Log::INFO);
+    LogMsg(tr("qBittorrent is now Offline ? %1").arg(m_isOffline), Log::INFO);
 }
 
 bool Session::isDHTEnabled() const
@@ -1082,8 +1082,6 @@ void Session::initializeNativeSession()
 {
     const lt::alert_category_t alertMask = lt::alert::error_notification
         | lt::alert::dht_notification
-        // | lt::alert::dht_operation_notification
-        // | lt::alert::dht_log_notification
         | lt::alert::file_progress_notification
         | lt::alert::ip_block_notification
         | lt::alert::peer_notification
@@ -2395,7 +2393,11 @@ void Session::exportTorrentFile(const Torrent *torrent, const QString &folderPat
 
 QStorageInfo Session::downloadPathStorageInfo()
 {
-    QStorageInfo infoRoot(Utils::Fs::findRootFolder(QDir(downloadPath())));
+    const QString pathToMonitor = Preferences::instance()->getLowDiskSpaceCheckPathToMonitor();
+
+    QStorageInfo infoRoot(Utils::Fs::findRootFolder(QDir(
+        !pathToMonitor.isEmpty() ? pathToMonitor : downloadPath()
+    )));
 
     return infoRoot;
 }
@@ -2403,7 +2405,7 @@ QStorageInfo Session::downloadPathStorageInfo()
 void Session::extensionUtilitiesTimerEvent()
 {
     if (m_isOffline) {
-        LogMsg(tr("Sorry, I'm offline %1").arg(m_isOffline));
+        LogMsg(tr("qBittorrent is offline, press CTRL-F7 to toggle %1").arg(m_isOffline));
 
         lt::settings_pack settingsPack = m_nativeSession->get_settings();
         settingsPack.set_int(lt::settings_pack::download_rate_limit, 1);
@@ -2426,30 +2428,39 @@ void Session::extensionUtilitiesTimerEvent()
         ),
         Log::INFO);
 
-        // if disk space is running below x Gb, force download speed to 32k, and I can keep uploading
-        if (infoRoot.bytesFree() < ((qint64)minFreeGb * 1024 * 1024 * 1024)) {
+        if (infoRoot.bytesAvailable() < ((qint64)minFreeGb * 1024 * 1024 * 1024)) {
             lt::settings_pack settingsPack = m_nativeSession->get_settings();
-            settingsPack.set_int(lt::settings_pack::download_rate_limit, 32 * 1024);
-            //settingsPack.set_int(lt::settings_pack::upload_rate_limit, 0);
+
+            int upSpeed   = Preferences::instance()->getLowDiskSpaceCheckUpSpeed();
+            int downSpeed = Preferences::instance()->getLowDiskSpaceCheckDownSpeed();
+
+            if (upSpeed   > 0) settingsPack.set_int(lt::settings_pack::upload_rate_limit,   upSpeed);
+            if (downSpeed > 0) settingsPack.set_int(lt::settings_pack::download_rate_limit, downSpeed);
+
             m_nativeSession->apply_settings(settingsPack);
 
-            LogMsg(tr("Disk space low, download speed lowered, upload speed unleashed"), Log::INFO);
+            LogMsg(tr("Disk space low, download speed set to %1, upload speed set to %2").arg(
+                QString::number(settingsPack.get_int(lt::settings_pack::upload_rate_limit)),
+                QString::number(settingsPack.get_int(lt::settings_pack::download_rate_limit))
+            ),
+            Log::INFO);
+
+            return;
+        }
+    }
+
+    if (Preferences::instance()->isDynamicBandwidthSwitchEnabled()) {
+        LogMsg(tr("ApplyDynamicBandwidthSwitch is enabled.."), Log::INFO);
+
+        if (m_status.downloadRate < Preferences::instance()->getDynamicBandwidthSwitchLowerThreshold()) {
+            // if download speed gets lower than 256k, means I am not downloading, so set the alt speed where upload is unlocked
+            setAltGlobalSpeedLimitEnabled(true);
+            applyBandwidthLimits();
         }
         else {
-            LogMsg(tr("Normal applyBandwidthLimits with dynamic logic.."), Log::INFO);
-
-            // if enough disk space, I can apply the usual "dynamic" bandwidth logic
-
-            if (m_status.downloadRate < 256 * 1024) {
-                // if download speed gets lower than 256k, means I am not downloading, so set the alt speed where upload is unlocked
-                setAltGlobalSpeedLimitEnabled(true);
-                applyBandwidthLimits();
-            }
-            else {
-                // if I am downloading, set standard speed where upload is capped
-                setAltGlobalSpeedLimitEnabled(false);
-                applyBandwidthLimits();
-            }
+            // if I am downloading, set standard speed where upload is capped
+            setAltGlobalSpeedLimitEnabled(false);
+            applyBandwidthLimits();
         }
     }
 }
@@ -5291,12 +5302,19 @@ void Session::handleDHTGetPeersAlert(const lt::dht_get_peers_alert* p)
 
     LogMsg(tr("handleDHTGetPeersAlert \"%1\"").arg(infoHashS), Log::INFO);
 
-    if (Preferences::instance()->isForceSeedUponGetPeers()) {
+    int resumeUponGetPeersBehavior = Preferences::instance()->getResumeUponGetPeersBehavior();
+
+    if (resumeUponGetPeersBehavior > 0) {
         const auto id = BitTorrent::TorrentID::fromString(infoHashS);
         BitTorrent::Torrent* const torrent = BitTorrent::Session::instance()->findTorrent(id);
         if (torrent && torrent->progress() == 1.0) {
-            torrent->resume(BitTorrent::TorrentOperatingMode::Forced);
-            LogMsg(tr("Forcing resume of torrent due to get_peers request %1 \"%2\"").arg(infoHashS, torrent->name()), Log::INFO);
+
+            if (resumeUponGetPeersBehavior == 2) torrent->resume(BitTorrent::TorrentOperatingMode::Forced);
+            if (resumeUponGetPeersBehavior == 1) torrent->resume();
+
+            LogMsg(tr("Resuming behavior %1 torrent due to get_peers request %2 \"%3\"").arg(
+                QString::number(resumeUponGetPeersBehavior), infoHashS, torrent->name()
+            ), Log::INFO);
         }
     }
 

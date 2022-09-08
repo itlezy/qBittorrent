@@ -1664,19 +1664,15 @@ bool Preferences::getSpeedWidgetGraphEnable(const int id) const
     return value(QString::fromLatin1("SpeedWidget/graph_enable_%1").arg(id), ((id == 0) || (id == 1)));
 }
 
-void Preferences::setForceSeedUponGetPeers(const bool enabled)
+void Preferences::setSpeedWidgetGraphEnable(const int id, const bool enable)
 {
-    setValue("Extensions/ForceSeedUponGetPeers/Enabled", enabled);
+    setValue(QString::fromLatin1("SpeedWidget/graph_enable_%1").arg(id), enable);
 }
 
-bool Preferences::isForceSeedUponGetPeers() const
+int Preferences::getResumeUponGetPeersBehavior() const
 {
-    return value("Extensions/ForceSeedUponGetPeers/Enabled", true);
-}
-
-void Preferences::setLowDiskSpaceCheckGb(const int minFreeGb)
-{
-    setValue("Extensions/LowDiskSpaceCheck/Gb", minFreeGb);
+    // 0 off, 1 standard resume, 2 forced resume
+    return value("Extensions/ResumeUponGetPeers/Behavior", 2);
 }
 
 int Preferences::getLowDiskSpaceCheckGb() const
@@ -1684,9 +1680,35 @@ int Preferences::getLowDiskSpaceCheckGb() const
     return value("Extensions/LowDiskSpaceCheck/Gb", 12);
 }
 
-void Preferences::setSpeedWidgetGraphEnable(const int id, const bool enable)
+QString Preferences::getLowDiskSpaceCheckPathToMonitor() const
 {
-    setValue(QString::fromLatin1("SpeedWidget/graph_enable_%1").arg(id), enable);
+    return value<QString>("Extensions/LowDiskSpaceCheck/PathToMonitor");
+}
+
+int Preferences::getLowDiskSpaceCheckUpSpeed() const
+{
+    return value("Extensions/LowDiskSpaceCheck/UpSpeed", 1024 * 1024);
+}
+
+int Preferences::getLowDiskSpaceCheckDownSpeed() const
+{
+    return value("Extensions/LowDiskSpaceCheck/DownSpeed", 16 * 1024);
+}
+
+bool Preferences::isDynamicBandwidthSwitchEnabled() const
+{
+    return value("Extensions/ApplyDynamicBandwidthSwitch/Enabled", true);
+}
+
+int Preferences::getDynamicBandwidthSwitchLowerThreshold() const
+{
+    return value("Extensions/DynamicBandwidthSwitch/LowerThreshold", 256 * 1024);
+}
+
+int Preferences::getStalledDownloadBehavior() const
+{
+    // 0 off, 1 pause, 2 forced download
+    return value("Extensions/StalledDownload/Behavior", 2);
 }
 
 void Preferences::apply()

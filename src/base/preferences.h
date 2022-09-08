@@ -407,10 +407,14 @@ public:
     void setSpeedWidgetGraphEnable(int id, bool enable);
 
     // Extensions
-    bool isForceSeedUponGetPeers() const;
-    void setForceSeedUponGetPeers(bool enabled);
+    int getResumeUponGetPeersBehavior() const;
     int getLowDiskSpaceCheckGb() const;
-    void setLowDiskSpaceCheckGb(int minFreeGb);
+    QString getLowDiskSpaceCheckPathToMonitor() const;
+    int getLowDiskSpaceCheckUpSpeed() const;
+    int getLowDiskSpaceCheckDownSpeed() const;
+    bool isDynamicBandwidthSwitchEnabled() const;
+    int getDynamicBandwidthSwitchLowerThreshold() const;
+    int getStalledDownloadBehavior() const;
 
 public slots:
     void setStatusFilterState(bool checked);
