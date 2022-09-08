@@ -13,7 +13,17 @@ Branch of v.4.4.x release with some minor improvements
 
 Most of this is configurable by editing the `%APPDATA%\qBittorrent\qBittorrent.ini`
 
-Please see the values to set from `preferences.cpp`
+The structure in the ini file should be as follow, in example
+
+```
+
+[Extensions]
+LowDiskSpaceCheck\Gb=4
+LowDiskSpaceCheck\PathToMonitor=x:/your_path
+
+```
+
+Please see the values to set, and their defaults, from `preferences.cpp`
 
 ```c
 /**
