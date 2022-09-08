@@ -14,7 +14,7 @@
       "variables": [
         {
           "name": "LibtorrentRasterbar_DIR",
-          "value": "C:/prj/vcpkg/installed/x64-windows-static/debug/share",
+          "value": "c:/prj/p2p/libtorrent-2.0.7-install",
           "type": "PATH"
         },
         {
@@ -68,7 +68,7 @@
       "variables": [
         {
           "name": "LibtorrentRasterbar_DIR",
-          "value": "C:/prj/vcpkg/installed/x64-windows-static/share",
+          "value": "c:/prj/p2p/libtorrent-2.0.7-install",
           "type": "PATH"
         },
         {
