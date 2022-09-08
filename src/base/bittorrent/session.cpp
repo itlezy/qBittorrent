@@ -522,6 +522,17 @@ void Session::toggleOffline()
 {
     m_isOffline = !m_isOffline;
     LogMsg(tr("qBittorrent is now Offline ? %1").arg(m_isOffline), Log::INFO);
+
+    if (m_isOffline) {
+        lt::settings_pack settingsPack = m_nativeSession->get_settings();
+        settingsPack.set_int(lt::settings_pack::download_rate_limit, 1);
+        settingsPack.set_int(lt::settings_pack::upload_rate_limit, 1);
+        m_nativeSession->apply_settings(settingsPack);
+    }
+    else {
+        setAltGlobalSpeedLimitEnabled(false);
+        applyBandwidthLimits();
+    }
 }
 
 bool Session::isDHTEnabled() const
@@ -2404,17 +2415,6 @@ QStorageInfo Session::downloadPathStorageInfo()
 
 void Session::extensionUtilitiesTimerEvent()
 {
-    if (m_isOffline) {
-        LogMsg(tr("qBittorrent is offline, press CTRL-F7 to toggle %1").arg(m_isOffline));
-
-        lt::settings_pack settingsPack = m_nativeSession->get_settings();
-        settingsPack.set_int(lt::settings_pack::download_rate_limit, 1);
-        settingsPack.set_int(lt::settings_pack::upload_rate_limit, 1);
-        m_nativeSession->apply_settings(settingsPack);
-
-        return;
-    }
-
     int minFreeGb = Preferences::instance()->getLowDiskSpaceCheckGb();
 
     if (minFreeGb > 0) {
